@@ -1,0 +1,79 @@
+## Create Fact_hospital
+
+%sql
+
+create or replace view hospital.healthlycare.fact_hospital
+as 
+select 
+    a.transaction_id,
+    a.appointment_id,
+    b.bill_id,
+    a.patient_id,    
+    a.doctor_id,     
+    t.treatment_id,  
+    a.appointment_date,
+    a.appointment_time,
+    a.reason_for_visit,
+    a.status,
+    b.bill_date,
+    b.amount,     
+    b.payment_method,
+    b.payment_status,
+    t.treatment_date,
+    a.Data_Source
+FROM hospital.healthlycare.silver_appointments a
+LEFT JOIN hospital.healthlycare.silver_treatments t 
+    ON a.appointment_id = t.appointment_id
+LEFT JOIN hospital.healthlycare.silver_billing b 
+    ON a.patient_id = b.patient_id AND t.treatment_id = b.treatment_id;
+
+## Create dim_patients
+
+%sql
+
+create or replace view hospital.healthlycare.dim_patients
+as
+SELECT 
+    patient_id,
+    Full_Name,
+    gender,
+    date_of_birth,
+    contact_number,
+    address,
+    registration_date,
+    insurance_provider,
+    insurance_number,
+    email,
+    Data_Source
+FROM hospital.healthlycare.silver_patients;
+
+## Create dim_doctors
+
+%sql
+
+
+create or replace view hospital.healthlycare.dim_doctors
+as 
+SELECT 
+    doctor_id,
+    Full_Name,
+    specialization,
+    phone_number,
+    years_experience,
+    hospital_branch,
+    email,
+    Data_Source
+FROM hospital.healthlycare.silver_doctors;
+
+## Create dim_treatments
+
+%sql
+create or replace view hospital.healthlycare.dim_treatments
+as
+SELECT DISTINCT 
+    treatment_id,
+    treatment_type,
+    description,
+    cost,
+    Data_Source
+FROM hospital.healthlycare.silver_treatments;

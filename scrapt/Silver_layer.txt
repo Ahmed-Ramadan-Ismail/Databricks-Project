@@ -1,0 +1,52 @@
+import pyspark
+from pyspark.sql.functions import *
+
+patients = spark.read.table("hospital.healthlycare.bronze_patients")
+doctors = spark.read.table("hospital.healthlycare.bronze_doctors")
+treatments = spark.read.table("hospital.healthlycare.bronze_treatments")
+appointments = spark.read.table("hospital.healthlycare.bronze_appointments")
+billing = spark.read.table("hospital.healthlycare.bronze_billing")
+
+
+## To handle null values in gender column & replace F & M with Female & Male
+pateints = patients.replace("F","Female",subset = "gender").replace("M","male",subset = "gender") 
+pateints.filter(col("gender").isNull()).count()
+
+pateints = pateints.withColumn("Full_Name" , concat_ws(" ",col("first_name") ,col("last_name")))
+pateints = pateints.drop("first_name","last_name")
+
+
+pateints.groupBy("gender").count().show()
+
+---------
+
+## To check if there is null value or no
+pateints.filter(col("patient_id").isNull()).count()
+
+
+pateints =pateints.withColumn("date_of_birth",to_date(col("date_of_birth"),"yyyy-MM-dd"))
+
+pateints.filter(col("date_of_birth").isNull()).count()
+
+doctors = doctors.withColumn("Full_Name", concat_ws(" ",col("first_name"),col("last_name")))
+
+doctors = doctors.drop("first_name","last_name")
+
+-----------Treatments----------
+## Handle cost column
+treatments = treatments.withColumn("cost",round(col("cost"),1))
+
+
+
+appointments = appointments.withColumn("appointment_time",date_format(to_timestamp(col("appointment_time"), "H:mm:ss"), "hh:mm a"))
+
+appointments= appointments.withColumn("transaction_id", concat(lit("trans"), (monotonically_increasing_id() + 1).cast("string")))
+
+billing =billing.withColumn("amount",round(col("amount"),1))
+
+--------load
+pateints.write.mode("append").format("delta").saveAsTable("hospital.healthlycare.silver_patients")
+doctors.write.mode("append").format("delta").saveAsTable("hospital.healthlycare.silver_doctors")
+treatments.write.mode("append").format("delta").saveAsTable("hospital.healthlycare.silver_treatments")
+billing.write.mode("append").format("delta").saveAsTable("hospital.healthlycare.silver_billing")
+appointments.write.mode("append").format("delta").saveAsTable("hospital.healthlycare.silver_appointments")

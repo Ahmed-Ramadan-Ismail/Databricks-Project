@@ -1,0 +1,31 @@
+import pyspark
+import requests 
+import pandas as pd
+from pyspark.sql.functions import lit
+
+url_patients = "https://raw.githubusercontent.com/AbdelrahmanAlis/hospital-data-pipeline/refs/heads/main/data/patients.csv"
+url_treaments = "https://raw.githubusercontent.com/AbdelrahmanAlis/hospital-data-pipeline/refs/heads/main/data/treatments.csv"
+
+
+df_appointments = spark.read.csv("/Volumes/hospital/healthlycare/healthly_volume/appointments.csv",header = True)
+df_doctors = spark.read.csv("/Volumes/hospital/healthlycare/healthly_volume/doctors.csv",header = True)
+df_billing = spark.read.csv("/Volumes/hospital/healthlycare/healthly_volume/billing.csv",header = True)
+
+df_patients = pd.read_csv(url_patients)
+df_treatments = pd.read_csv(url_treaments)
+df_patients = spark.createDataFrame(df_patients)
+df_treatments = spark.createDataFrame(df_treatments)
+
+
+df_patients = df_patients.withColumn("Data_Source" , lit("API"))
+df_treatments = df_treatments.withColumn("Data_Source" , lit("API"))
+df_appointments = df_appointments.withColumn("Data_Source" , lit("Hospital.Healthycare.healthly_volume"))
+df_doctors = df_doctors.withColumn("Data_Source" , lit("Hospital.Healthycare.healthly_volume"))
+df_billing = df_billing.withColumn("Data_Source" , lit("Hospital.Healthycare.healthly_volume"))
+
+
+df_patients.write.mode("overwrite").format("delta").saveAsTable("hospital.healthlycare.bronze_patients")
+df_treatments.write.mode("overwrite").format("delta").saveAsTable("hospital.healthlycare.bronze_treatments")
+df_appointments.write.mode("overwrite").format("delta").saveAsTable("hospital.healthlycare.bronze_appointments")
+df_doctors.write.mode("overwrite").format("delta").saveAsTable("hospital.healthlycare.bronze_doctors")
+df_billing.write.mode("overwrite").format("delta").saveAsTable("hospital.healthlycare.bronze_billing")
