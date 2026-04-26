@@ -8,7 +8,7 @@ This project showcases an enterprise-grade **End-to-End Data Pipeline** built on
 ## 🏗️ Architecture Design
 The pipeline follows a robust, scalable architecture transitioning data through three distinct layers (Bronze, Silver, and Gold) stored as **Delta Tables**.
 
-![Pipeline Architecture](https://github.com/Ahmed-Ramadan-Ismail/اسم_المستودع_بتاعك/raw/main/Design%20Pipeline.jpg)
+![Pipeline Architecture](https://github.com/Ahmed-Ramadan-Ismail/Databricks-Project/blob/main/image/Design%20Pipeline.png)
 
 ### 🛠️ Tech Stack & Tools
 * **Compute & Processing:** Azure Databricks, Apache Spark
